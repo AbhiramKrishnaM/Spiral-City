@@ -1,22 +1,25 @@
 
 class Sketch{
     constructor(){
-        this.width = document.body.clientWidth;
-        this.height = document.body.clientHeight; 
+        this.width = window.innerWidth;
+        this.height = window.innerHeight; 
         this.app = new PIXI.Application({
              backgroundColor: 0xffffff, 
-             resolution:  1,
+             resolution: window.devicePixelRatio || 1,
              resizeTo: window
         });
-        console.log(document.body.clientWidth);
+        
         document.body.appendChild(this.app.view);
         
         this.container = new PIXI.Container();
+        // the spiral stays on so its a different container
+        this.containerSpiral = new PIXI.Container();
 
         this.phi = 0.5 + Math.sqrt(5)/2;
-        this.center = 0.7237;
+        this.center = 0.7237595499957939;  //0.7213595499957939
         
         this.app.stage.addChild(this.container);
+        this.app.stage.addChild(this.containerSpiral);
         this.time = 0;
         this.add();
         this.addStuff();
@@ -26,9 +29,9 @@ class Sketch{
 
 
     getSprite(){
-        let block = new PIXI.Sprite.from('./city.png');
-        block.width = 1150;
-        block.height = 1150;
+        let block = new PIXI.Sprite.from('./river_1s.png');
+        block.width = 500;
+        block.height = 500;
         return block;
     }
 
@@ -112,13 +115,54 @@ class Sketch{
         this.ctx.moveTo(lastRight, tempVertical),
         this.ctx.lineTo(lastLeft, tempVertical),
         this.ctx.moveTo(lastLeft, tempVertical),
-        this.ctx.arc(lastLeft, tempVertical, lastRight - lastLeft, 1.5 * Math.PI, 0),
-
-        this.container.addChild(this.ctx);
+        this.ctx.arc(lastLeft, tempVertical, lastRight - lastLeft, 1.5 * Math.PI, 0)
+        console.log(lastLeft/this.width)
+        // this spiral wont rotate 
+        this.containerSpiral.addChild(this.ctx);
     }
 
+    getBlock(){
+        let block = new PIXI.Sprite(PIXI.Texture.WHITE);
+        block.tint = 0xff0000*Math.random();
+        block.alpha = 0.5;
+        block.width = 10;
+        block.height = 10;
+        return block;
+    
+    }
     addStuff(){
+        // calculate the center 
+        this.centerX = this.width*this.center;
+        this.centerY = this.height*this.center/this.phi;
 
+        let blockSec = new PIXI.Sprite(PIXI.Texture.WHITE);
+        blockSec.tint = 0xff0000;
+        blockSec.width = 10;
+        blockSec.height = 10;
+        blockSec.position.set(this.centerX, this.centerY)
+
+        this.container.addChild(blockSec);
+
+        for(let i = 0; i < 5; i++){
+            let container = new PIXI.Container();
+            let bl = this.getSprite(); 
+            bl.width = this.width/this.phi;
+            bl.height = this.width/this.phi;
+            let angle = i*Math.PI/2;
+            let scale = Math.pow(1/(this.phi), i);
+            
+            // align the container to the center
+            container.position.set(this.centerX,this.centerY);
+            bl.position.set(-this.centerX,-this.centerY);
+            // bl.rotation = 0.5;
+
+            container.rotation = angle;
+            container.scale.set(scale);
+
+
+            container.addChild(bl);
+            this.container.addChild(container);
+        } 
     }
 
     add(){
@@ -141,7 +185,13 @@ class Sketch{
 
 
 
-new Sketch();
+
+
+new Sketch(); 
+
+
+
+
 
 
 
